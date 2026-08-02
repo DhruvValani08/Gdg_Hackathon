@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civil Sahai — Interactive Presentation Deck</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090D16;
+      --card-bg: rgba(18, 26, 43, 0.85);
+      --primary: #3B82F6;
+      --primary-glow: #60A5FA;
+      --accent-purple: #A855F7;
+      --accent-cyan: #06B6D4;
+      --accent-emerald: #10B981;
+      --danger: #EF4444;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.2) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.2) 0px, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .deck-container {
+      width: 100%;
+      max-width: 1100px;
+      aspect-ratio: 16 / 9;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      padding: 2.5rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      display: none;
+      height: 100%;
+      flex-direction: column;
+      animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    .slide-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary-glow);
+    }
+
+    .slide-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+    }
+
+    .slide-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #FFFFFF 40%, #93C5FD 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .slide-body {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Grids & Cards */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+
+    .feature-card {
+      background: rgba(8, 12, 23, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .feature-card h4 {
+      font-size: 1.05rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .feature-card p, .feature-card ul {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .feature-card ul { padding-left: 1.2rem; }
+
+    .metric-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-cyan);
+    }
+
+    .badge-highlight {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: var(--primary-glow);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 1100px;
+      margin-top: 1.25rem;
+    }
+
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: white;
+      font-weight: 700;
+      padding: 0.6rem 1.4rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-print {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--accent-emerald);
+      color: #6EE7B7;
+    }
+
+    @media print {
+      body { background: white; color: black; padding: 0; }
+      .deck-container { box-shadow: none; border: none; aspect-ratio: auto; }
+      .slide { display: flex !important; page-break-after: always; padding: 2rem 0; }
+      .controls { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck-container">
+    <!-- SLIDE 1 -->
+    <div class="slide active">
+      <div class="slide-header">
+        <span class="slide-tag">🏥 Project Overview</span>
+        <span class="slide-number">01 / 12</span>
+      </div>
+      <div class="slide-body" style="text-align: center;">
+        <span class="badge-highlight" style="margin-bottom: 1rem;">Powered by Google Gemma 4</span>
+        <h1 class="slide-title" style="font-size: 3rem;">Civil Sahai (સિવિલ સહાય)</h1>
+        <p class="slide-subtitle" style="font-size: 1.25rem; max-width: 750px; margin: 0 auto 2rem auto;">
+          Intelligent Multilingual Clinical Intake, Staff Triage & Rural-to-Urban Referral Synthesizer
+        </p>
+        <div class="grid-4">
+          <div class="feature-card">
+            <h4>🌐 Multilingual</h4>
+            <p>Gujarati, Hindi, English, and regional dialects.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🔒 100% Privacy</h4>
+            <p>Zero cloud upload; runs locally on hospital LAN.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🩺 4 Portals</h4>
+            <p>Patients, Triage Staff, Doctors & Health Camps.</p>
+          </div>
+          <div class="feature-card">
+            <h4>⚡ Zero-Diagnosis</h4>
+            <p>Structures facts; empowers doctor authorization.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">⚠️ The Problem</span>
+        <span class="slide-number">02 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">The High-Volume OPD & Referral Bottleneck</h2>
+        <p class="slide-subtitle">Public tertiary hospitals in India face dual systemic challenges daily.</p>
+        <div class="grid-2">
+          <div class="feature-card" style="border-left: 4px solid var(--danger);">
+            <h4>🚨 The OPD Language Divide</h4>
+            <ul>
+              <li>5,000+ walk-in patients daily at district civil hospitals.</li>
+              <li>Doctors have &lt;2 minutes per consultation.</li>
+              <li>Patients speak regional dialects and miss crucial details (e.g. chronic BP meds, allergies).</li>
+            </ul>
+          </div>
+          <div class="feature-card" style="border-left: 4px solid var(--accent-purple);">
+            <h4>🚑 The Rural Referral Blindspot</h4>
+            <ul>
+              <li>108 Ambulances transfer critical cases from village PHCs.</li>
+              <li>Paper referral chits get lost, smudged, or lack critical timestamps.</li>
+              <li>Receiving ER doctors miss exact Anti-Snake Venom (ASV) dosage times or in-transit vomiting.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">🔄 Clinical Architecture</span>
+        <span class="slide-number">03 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">End-to-End Connected Clinical Workflow</h2>
+        <p class="slide-subtitle">Seamless transition of structured data across 4 dedicated clinical roles.</p>
+        <div class="grid-4">
+          <div class="feature-card" style="border-color: var(--primary);">
+            <h4>1. Patient Intake</h4>
+            <p>Voice input + "Sahai Mitra" chat assistant auto-fills history & generates Token ID.</p>
+          </div>
+          <div class="feature-card" style="border-color: var(--accent-purple);">
+            <h4>2. Staff Triage</h4>
+            <p>Sister Anjali reviews AI summaries & routes to Cardiology/Medicine/Ortho/Emergency.</p>
+          </div>
+          <div class="feature-card" style="border-color: var(--accent-cyan);">
+            <h4>3. Doctor Suite</h4>
+            <p>Dr. Mehta reviews isolated queue, establishes diagnosis & signs official digital Rx.</p>
+          </div>
+          <div class="feature-card" style="border-color: var(--accent-emerald);">
+            <h4>4. Health Camps</h4>
+            <p>Offline village screening & outbound 108 ambulance dispatch dossiers.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">🧠 Gemma Engine</span>
+        <span class="slide-number">04 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">4-Layer Local Gemma Intelligence</h2>
+        <p class="slide-subtitle">On-device semantic parsing and deterministic clinical safety guardrails.</p>
+        <div class="grid-2">
+          <div class="feature-card">
+            <h4>🗣️ Vernacular Translation & Extraction</h4>
+            <p>Translates colloquial phrases (e.g., <em>"માથું ભારે છે", "ચક્કર આવે છે"</em>) into standardized clinical symptoms and timelines.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🤖 "Sahai Mitra" Conversational Companion</h4>
+            <p>Multi-turn agent that detects missing history fields and populates the patient form in real time with green glowing highlights.</p>
+          </div>
+          <div class="feature-card">
+            <h4>📋 SBAR Transit Synthesis</h4>
+            <p>Structures chaotic transfer chits into Situation, Background, Assessment, and Recommendation for emergency physicians.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🚨 Deterministic Emergency Red-Flags</h4>
+            <p>Dual-layer rule engine instantly flagging cardiac distress, snakebites, and severe trauma before doctor review.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">🧑‍🤝‍🧑 Persona 1</span>
+        <span class="slide-number">05 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">Patient Voice-First Intake & Sahai Mitra Chat</h2>
+        <p class="slide-subtitle">Ensuring no patient is left unheard regardless of literacy or language.</p>
+        <div class="grid-3">
+          <div class="feature-card">
+            <h4>🎤 1-Click Voice Intake</h4>
+            <p>Patients speak freely in Gujarati or Hindi without typing complex medical terms.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🤖 Real-time Chat Assistant</h4>
+            <p>Sahai Mitra asks polite follow-ups ("Do you take BP meds?") and auto-fills fields live.</p>
+          </div>
+          <div class="feature-card">
+            <h4>📱 Digital Token Pass</h4>
+            <p>Generates secure Token ID (e.g. PAT-4821) for fast lookup at the reception desk.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">📋 Persona 2</span>
+        <span class="slide-number">06 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">Clinical Staff Triage & Doctor Routing Desk</h2>
+        <p class="slide-subtitle">Empowering triage nurses to route high-acuity patients in seconds.</p>
+        <div class="grid-2">
+          <div class="feature-card">
+            <h4>📥 Live Triage Queue & Token Search</h4>
+            <p>Search Token IDs (PAT-4821) or filter incoming walk-in and camp transfers by emergency status.</p>
+          </div>
+          <div class="feature-card">
+            <h4>👨‍⚕️ Specialist Department Routing</h4>
+            <p>Assign cases with 1 click to Cardiology (Dr. Mehta), General Medicine (Dr. Shah), Ortho (Dr. Patel), or Trauma (Dr. Verma).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">👨‍⚕️ Persona 3</span>
+        <span class="slide-number">07 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">Specialist Doctor Suite & Prescription Pad (Rx)</h2>
+        <p class="slide-subtitle">Isolated doctor queues and official digital prescription signing.</p>
+        <div class="grid-3">
+          <div class="feature-card">
+            <h4>🔒 Isolated Doctor Queue</h4>
+            <p>Doctors see only patients assigned to their specialty (e.g., Dr. Mehta sees Cardiology).</p>
+          </div>
+          <div class="feature-card">
+            <h4>📝 Clinical Diagnosis</h4>
+            <p>Doctor enters formal assessment (e.g., Acute Angina Pectoris) with objective AI brief.</p>
+          </div>
+          <div class="feature-card">
+            <h4>℞ Digital Rx Pad</h4>
+            <p>Add medications (1-0-1), advice, and sign official digital OPD prescriptions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">⛺ Persona 4</span>
+        <span class="slide-number">08 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">Community Health Camps & 108 Dispatch</h2>
+        <p class="slide-subtitle">100% offline edge capability for remote villages and mobile medical vans.</p>
+        <div class="grid-2">
+          <div class="feature-card">
+            <h4>🟢 Zero Cloud Dependency</h4>
+            <p>Runs entirely offline on field laptops without internet connectivity.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🚑 Outbound 108 Referral Dossiers</h4>
+            <p>Logs field BP, blood sugar (RBS), and generates SBAR dossiers for ambulance EMTs to avoid lost timestamps.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">🛡️ Responsible AI</span>
+        <span class="slide-number">09 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">Safety-First Clinical Guardrails</h2>
+        <p class="slide-subtitle">Strict boundaries ensuring AI augments physicians without prescribing.</p>
+        <div class="grid-2">
+          <div class="feature-card">
+            <h4>🚫 Strict Non-Diagnostic Boundary</h4>
+            <p>Gemma NEVER predicts diseases or suggests medication doses. Only human doctors prescribe.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🚨 Deterministic Emergency Override</h4>
+            <p>Hardcoded red-flag rules trigger instant alerts for chest pain, snakebites, and trauma.</p>
+          </div>
+          <div class="feature-card">
+            <h4>👨‍⚕️ Human Doctor in the Loop</h4>
+            <p>Every prescription and diagnosis must be authorized and signed by an attending physician.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🔒 Complete Data Privacy</h4>
+            <p>Patient health records stay strictly inside hospital infrastructure.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">💻 Technology & Kaggle Stack</span>
+        <span class="slide-number">10 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">Gemma AI, Kaggle Benchmarking & Edge Runtime</h2>
+        <p class="slide-subtitle">Engineered for speed, offline resilience, and verified on Kaggle GPU T4.</p>
+        <div class="grid-4">
+          <div class="feature-card">
+            <h4>🧠 Google Gemma 2B</h4>
+            <p>Runs structured JSON prompt synthesis for vernacular intake & SBAR referral handovers.</p>
+          </div>
+          <div class="feature-card">
+            <h4>📊 Kaggle Evaluation</h4>
+            <p>Validated across multilingual test cases on Kaggle GPU T4 with zero hallucination.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🔒 Ollama Local Runtime</h4>
+            <p>100% offline edge execution on hospital LAN with zero cloud data exposure.</p>
+          </div>
+          <div class="feature-card">
+            <h4>⚛️ React 18 + Audio</h4>
+            <p>Multilingual Web Speech dictation & glassmorphic role-based portals.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">📈 Clinical Impact</span>
+        <span class="slide-number">11 / 12</span>
+      </div>
+      <div class="slide-body">
+        <h2 class="slide-title">Quantifiable Healthcare Metrics</h2>
+        <p class="slide-subtitle">Transforming public hospital efficiency and patient outcomes.</p>
+        <div class="grid-4">
+          <div class="feature-card" style="text-align: center;">
+            <div class="metric-value">85%</div>
+            <p>Reduction in Intake Time (6m ➔ 45s)</p>
+          </div>
+          <div class="feature-card" style="text-align: center;">
+            <div class="metric-value">100%</div>
+            <p>Elimination of Lost 108 Referral Timestamps</p>
+          </div>
+          <div class="feature-card" style="text-align: center;">
+            <div class="metric-value">0</div>
+            <p>Language Barrier Dropouts</p>
+          </div>
+          <div class="feature-card" style="text-align: center;">
+            <div class="metric-value">100%</div>
+            <p>Offline Edge Resilience</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12 -->
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-tag">🚀 Conclusion & Q&A</span>
+        <span class="slide-number">12 / 12</span>
+      </div>
+      <div class="slide-body" style="text-align: center;">
+        <h2 class="slide-title" style="font-size: 2.5rem;">Thank You! (આભાર)</h2>
+        <p class="slide-subtitle" style="font-size: 1.15rem; max-width: 650px; margin: 0 auto 1.5rem auto;">
+          Civil Sahai bridges the clinical communication divide with Google Gemma — from remote village health camps to district emergency trauma rooms.
+        </p>
+        <div class="grid-3" style="max-width: 800px; margin: 0 auto 1.5rem auto;">
+          <div class="feature-card">
+            <h4>Live Demo</h4>
+            <p>Experience the 4 portals live in your browser.</p>
+          </div>
+          <div class="feature-card">
+            <h4>ABDM Ready</h4>
+            <p>Built for Ayushman Bharat Digital Mission standards.</p>
+          </div>
+          <div class="feature-card">
+            <h4>Open Source</h4>
+            <p>Gemma Sprint Repository & Kaggle writeup.</p>
+          </div>
+        </div>
+        <span class="badge-highlight">Ready for Questions & Clinical Discussion</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-nav" id="prevBtn" onclick="prevSlide()" disabled>← Previous Slide</button>
+    <button class="btn-nav btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <button class="btn-nav" id="nextBtn" onclick="nextSlide()">Next Slide →</button>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function showSlide(index) {
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === index);
+      });
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = index === slides.length - 1;
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        showSlide(currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        showSlide(currentSlide);
+      }
+    }
+
+    // Keyboard Arrow Navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civil Sahai — Kaggle Submission Pack & Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070a13;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #8b5cf6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --code-bg: #030712;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+                  var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      padding: 2.5rem 1.5rem;
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 3rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    h1 { font-size: 2.4rem; font-weight: 800; margin-bottom: 0.75rem; background: linear-gradient(135deg, #fff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    p.lead { color: var(--text-muted); font-size: 1.05rem; max-width: 700px; margin: 0 auto; }
+    
+    .section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    h2 { font-size: 1.4rem; margin-bottom: 1.25rem; color: #38bdf8; display: flex; align-items: center; gap: 0.5rem; }
+    h3 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem 0; color: #c084fc; }
+    
+    .field-card {
+      background: rgba(3, 7, 18, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .field-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem; }
+    .field-content { color: #e2e8f0; font-size: 0.95rem; }
+    
+    pre {
+      background: var(--code-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      color: #93c5fd;
+      margin: 1rem 0;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(59, 130, 246, 0.3);
+      border: 1px solid var(--primary);
+      color: #fff;
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .copy-btn:hover { background: var(--primary); }
+    
+    ol, ul { padding-left: 1.5rem; color: #cbd5e1; margin-bottom: 1rem; }
+    li { margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="badge">Google Gemma Competition Kit</span>
+      <h1>Kaggle Submission Pack</h1>
+      <p class="lead">Complete step-by-step checklist, Python notebook code, and write-up details ready to submit to Kaggle.</p>
+    </div>
+
+    <!-- SECTION 1 -->
+    <div class="section">
+      <h2>📌 1. Submission Metadata for Kaggle</h2>
+      
+      <div class="field-card">
+        <div class="field-title">Notebook / Project Title</div>
+        <div class="field-content"><strong>Civil Sahai: Gemma-Powered Multilingual Clinical Intake & Inter-Hospital Referral System</strong></div>
+      </div>
+
+      <div class="field-card">
+        <div class="field-title">Short Tagline / Subtitle</div>
+        <div class="field-content">Zero-diagnosis, multilingual patient intake assistant & rural-to-tertiary SBAR handover synthesizer built with Google Gemma.</div>
+      </div>
+
+      <div class="field-card">
+        <div class="field-title">Category / Track</div>
+        <div class="field-content">Gemma / Healthcare Accessibility & Clinical Workflows</div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section">
+      <h2>🚀 2. Kaggle Notebook Creation Guide</h2>
+      <ol>
+        <li>Open <a href="https://www.kaggle.com" target="_blank" style="color:#38bdf8;">kaggle.com</a> and click <strong>"+ Create" ➔ "New Notebook"</strong>.</li>
+        <li>On the right settings bar:
+          <ul>
+            <li><strong>Accelerator</strong>: Choose <code>GPU T4 x2</code> (Free).</li>
+            <li><strong>Internet</strong>: Set to <code>ON</code>.</li>
+          </ul>
+        </li>
+        <li>Copy and paste the cells below into your Kaggle Notebook.</li>
+        <li>Click <strong>"Save Version" ➔ "Save & Run All (Commit)"</strong>, then set sharing to <strong>Public</strong>.</li>
+      </ol>
+
+      <h3>Python Code for Kaggle Notebook</h3>
+      <div style="position: relative;">
+        <pre><code># 1. Install Required Libraries
+!pip install -q transformers accelerate bitsandbytes
+
+# 2. Load Google Gemma Model
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+MODEL_ID = "google/gemma-2-2b-it"
+tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+model = AutoModelForCausalLM.from_pretrained(MODEL_ID, torch_dtype=torch.float16, device_map="auto")
+print("✓ Gemma Loaded!")</code></pre>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section">
+      <h2>📝 3. Submission Description / Write-up</h2>
+      <div class="field-card">
+        <div class="field-title">Problem Statement</div>
+        <div class="field-content">Solves the OPD multilingual intake bottleneck (Gujarati/Hindi/English) and eliminates fatal "handover blind spots" during rural-to-urban inter-hospital emergency referrals.</div>
+      </div>
+      <div class="field-card">
+        <div class="field-title">Gemma's Technical Role</div>
+        <div class="field-content">Structured JSON prompt synthesis, vernacular entity extraction, SBAR handover packaging, zero-diagnosis clinical safety guardrails, and offline edge computing with Ollama.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
