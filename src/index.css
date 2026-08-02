@@ -491,10 +491,14 @@ body {
 .patient-chat-drawer {
   display: flex;
   flex-direction: column;
-  height: 600px;
+  height: 620px;
+  min-height: 520px;
+  max-height: 85vh;
   padding: 1.25rem;
   border-color: rgba(59, 130, 246, 0.3);
   background: rgba(12, 19, 36, 0.85);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .chat-drawer-header {
@@ -503,7 +507,8 @@ body {
   gap: 0.75rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 
 .chat-avatar {
@@ -516,12 +521,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .chat-drawer-header h4 {
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-main);
+  margin: 0;
 }
 
 .chat-status {
@@ -531,21 +538,26 @@ body {
 }
 
 .chat-messages-container {
-  flex-grow: 1;
+  flex: 1 1 0%;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   padding-right: 0.35rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.6rem;
 }
 
 .chat-bubble {
-  max-width: 85%;
+  max-width: 88%;
   padding: 0.75rem 1rem;
   border-radius: 12px;
   font-size: 0.88rem;
   line-height: 1.45;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  flex-shrink: 0;
 }
 
 .assistant-bubble {
@@ -577,13 +589,64 @@ body {
   color: var(--text-dim);
 }
 
+.chat-quick-suggestions {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.4rem 0.2rem;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+}
+
+.chat-quick-suggestions::-webkit-scrollbar {
+  height: 4px;
+}
+
+.chat-quick-suggestions::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.4);
+  border-radius: 4px;
+}
+
+.chat-quick-chip {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.chat-quick-chip:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: #60a5fa;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.chat-quick-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .chat-input-bar {
   display: flex;
   gap: 0.4rem;
-  background: rgba(8, 12, 23, 0.8);
+  background: rgba(8, 12, 23, 0.85);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 0.4rem;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .chat-input-bar input {
@@ -594,6 +657,7 @@ body {
   font-size: 0.85rem;
   padding: 0.4rem 0.6rem;
   font-family: inherit;
+  min-width: 0;
 }
 
 .chat-input-bar input:focus {
@@ -608,6 +672,7 @@ body {
   border-radius: 6px;
   padding: 0.35rem 0.6rem;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .btn-chat-mic.recording {
@@ -624,44 +689,12 @@ body {
   padding: 0.35rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .btn-chat-send:disabled {
   background: #334155;
   cursor: not-allowed;
-}
-
-.chat-quick-suggestions {
-  display: flex;
-  gap: 0.35rem;
-  overflow-x: auto;
-  padding: 0.35rem 0.2rem;
-  margin-bottom: 0.4rem;
-  scrollbar-width: none;
-}
-
-.chat-quick-suggestions::-webkit-scrollbar {
-  display: none;
-}
-
-.chat-quick-chip {
-  background: rgba(30, 41, 59, 0.85);
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  color: #93c5fd;
-  font-size: 0.72rem;
-  font-weight: 500;
-  padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.chat-quick-chip:hover {
-  background: rgba(59, 130, 246, 0.25);
-  border-color: #60a5fa;
-  color: #ffffff;
-  transform: translateY(-1px);
 }
 
 /* Patient Portal Token Card */

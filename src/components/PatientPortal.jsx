@@ -62,16 +62,19 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const chatBottomRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   // Digital Token
   const [generatedToken, setGeneratedToken] = useState(null);
 
   useEffect(() => {
-    if (chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
-  }, [chatMessages]);
+  }, [chatMessages, isChatLoading]);
 
   const handleVoiceToggle = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -693,7 +696,7 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
                   </div>
                 </div>
 
-                <div className="chat-messages-container">
+                <div className="chat-messages-container" ref={chatContainerRef}>
                   {chatMessages.map((msg) => (
                     <div
                       key={msg.id}
@@ -708,7 +711,6 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
                       <span>Sahai Mitra is typing...</span>
                     </div>
                   )}
-                  <div ref={chatBottomRef} />
                 </div>
 
                 {/* Quick Interactive Inquiry Chips */}
