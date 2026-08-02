@@ -631,6 +631,39 @@ body {
   cursor: not-allowed;
 }
 
+.chat-quick-suggestions {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.35rem 0.2rem;
+  margin-bottom: 0.4rem;
+  scrollbar-width: none;
+}
+
+.chat-quick-suggestions::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-quick-chip {
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chat-quick-chip:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: #60a5fa;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
 /* Patient Portal Token Card */
 .patient-token-card {
   border-color: rgba(16, 185, 129, 0.4);

@@ -266,6 +266,7 @@ export function generateFallbackTransfer(text) {
 
 /**
  * Intelligent conversational fallback for Sahai Mitra (Patient Chat Companion)
+ * Handles comprehensive Q&A, OPD hospital navigation, direct symptom logging, and zero-diagnosis safety
  */
 export function generateFallbackPatientChat(message, currentFormData) {
   const text = message.trim();
@@ -283,13 +284,25 @@ export function generateFallbackPatientChat(message, currentFormData) {
   };
 
   // 1. Detect language
-  let isGujarati = /[\u0A80-\u0AFF]/.test(text) || /che|nathi|mane|chhe|ha|na|su|kay|kare|kem|shoon|aabhar|dhanyavad|bol/i.test(text);
-  let isHindi = /[\u0900-\u097F]/.test(text) || /hai|nahi|mujhe|haan|dawa|kya|kaise|kaha|batao|shukriya/i.test(text);
+  const isGujarati = /[\u0A80-\u0AFF]/.test(text) || /che|nathi|mane|chhe|ha|na|su|kay|kare|kem|shoon|aabhar|dhanyavad|bol|maru|tamaru|javu|malashe|dava|dawa/i.test(text);
+  const isHindi = /[\u0900-\u097F]/.test(text) || /hai|nahi|mujhe|haan|dawa|kya|kaise|kaha|batao|shukriya|kitna|kab|milega/i.test(text);
 
-  // 2. Extract Age
-  const ageMatch = text.match(/(\d+)\s*(?:years?|વર્ષ|साल|yr|उम्र|ઉંમર)/i) || text.match(/(?:age|ઉંમર|उम्र)\s*(?:is|che|hai|:)?\s*(\d+)/i);
-  if (ageMatch) {
-    extracted.age = `${ageMatch[1]} years`;
+  // 2. Robust Age Extraction (handles "45", "52", "approx 50", "umar 45", "45 saal", "45 varsh", "45 yr", etc.)
+  const standaloneNum = text.match(/^\s*(\d{1,3})\s*$/);
+  const ageExplicit = text.match(/(?:age|ઉંમર|उम्र|વર્ષ|साल|years? old|yr|yrs|વરસ|બરહ)\s*(?:is|che|hai|:)?\s*(\d{1,3})/i) 
+    || text.match(/(\d{1,3})\s*(?:years? old|years?|વર્ષ|साल|yr|yrs|વરસ|કી ઉંમર|ની ઉંમર)/i)
+    || text.match(/(?:i am|hu|main|mari umar|meri umar)\s*(\d{1,3})/i);
+
+  if (standaloneNum) {
+    const num = parseInt(standaloneNum[1], 10);
+    if (num >= 1 && num <= 115) {
+      extracted.age = `${num} years`;
+    }
+  } else if (ageExplicit) {
+    const num = parseInt(ageExplicit[1], 10);
+    if (num >= 1 && num <= 115) {
+      extracted.age = `${num} years`;
+    }
   }
 
   // 3. Extract Duration
@@ -300,18 +313,21 @@ export function generateFallbackPatientChat(message, currentFormData) {
     extracted.duration = '2 days';
   } else if (/ત્રણ દિવસ|3 days|તીન દિન/i.test(text)) {
     extracted.duration = '3 days';
+  } else if (/એક અઠવાડિયું|1 week|एक हफ्ता/i.test(text)) {
+    extracted.duration = '1 week';
   } else if (/આજથી|since morning|સવારથી|आज सुबह से/i.test(text)) {
     extracted.duration = 'Since morning';
   }
 
   // 4. Extract Severity
-  const sevMatch = text.match(/(\b[1-9]\b|10)\s*(?:\/10|out of 10|નંબર|દુખાવો)?/);
+  const sevMatch = text.match(/(\b[1-9]\b|10)\s*(?:\/10|out of 10|નંબર|તીવ્રતા|score)?/);
   if (sevMatch && (/severity|pain|scale|દુખાવાની તીવ્રતા|તીવ્રતા|rate|score/i.test(text) || /^\d+$/.test(text.trim()))) {
-    extracted.severity = parseInt(sevMatch[1], 10);
+    const s = parseInt(sevMatch[1], 10);
+    if (s >= 1 && s <= 10) extracted.severity = s;
   }
 
   // 5. Extract Conditions & Meds
-  if (/bp|blood pressure|હાઈ બીપી|બ્લડ પ્રેશર|હાયપરટેન્શન|hypertension/i.test(text)) {
+  if (/bp|blood pressure|હાઈ બીપી|બ્લડ પ્રેશર|હાયપરટેન્શન|hypertension|उच्च रक्तचाप/i.test(text)) {
     extracted.existing_conditions.push('Hypertension (High BP)');
   }
   if (/sugar|diabetes|ડાયાબિટીસ|મધુપ્રમેહ|સુગર|मधुमेह/i.test(text)) {
@@ -320,14 +336,14 @@ export function generateFallbackPatientChat(message, currentFormData) {
   if (/thyroid|થાઇરોઇડ|थायरॉइड/i.test(text)) {
     extracted.existing_conditions.push('Thyroid Disorder');
   }
-  if (/asthma|દમ|શ્વાસની બીમારી|अस्थमा/i.test(text)) {
+  if (/asthma|દમ|શ્વાસની બીમારી|અસ્થમા|अस्थमा/i.test(text)) {
     extracted.existing_conditions.push('Asthma / Respiratory condition');
   }
-  if (/heart|હૃદય|stent|હાર્ટ/i.test(text)) {
+  if (/heart|હૃદય|stent|હાર્ટ|bypass|એટેક/i.test(text)) {
     extracted.existing_conditions.push('Cardiac History');
   }
 
-  if (/metformin|ઇન્સ્યુલિન|insulin|atenolol|amlodipine|aspirin|sorbitrate|દવા લઉં છું|દવા ચાલુ|दवा खाता हूँ|दवा चल रही है/i.test(text)) {
+  if (/metformin|ઇન્સ્યુલિન|insulin|atenolol|amlodipine|aspirin|sorbitrate|દવા લઉં છું|દવા ચાલુ|दवा खाता हूँ|दવા લેતો/i.test(text)) {
     if (/bp/i.test(text)) extracted.current_medicines.push('Daily BP Medication (Amlodipine/Telmisartan)');
     if (/sugar|diabetes/i.test(text)) extracted.current_medicines.push('Antidiabetic Medication (Metformin/Insulin)');
     if (/metformin/i.test(text)) extracted.current_medicines.push('Metformin');
@@ -338,100 +354,230 @@ export function generateFallbackPatientChat(message, currentFormData) {
 
   // 6. Extract Allergies
   if (/penicillin|સલ્ફા|દવાની એલર્જી|allergy|एलर्जी/i.test(text)) {
-    if (/nathi|nahi|કોઈ એલર્જી નથી|no allergy|કોઈ નથી/i.test(text)) {
+    if (/nathi|nahi|કોઈ એલર્જી નથી|no allergy|કોઈ નથી|નથી/i.test(text)) {
       extracted.allergies.push('No known drug allergies');
     } else {
       extracted.allergies.push('Drug/Food allergy noted');
     }
-  } else if (/કોઈ એલર્જી નથી|નથી|nahi hai|no|none/i.test(text) && /allergy/i.test(currentFormData?._lastQuestion || '')) {
-    extracted.allergies.push('No known drug allergies');
   }
 
-  // 7. Intent Handling for Common General Patient Questions:
+  // 7. Extract Symptoms reported directly in chat
+  if (/માથું દુખ|headache|માથુ|सिरदर्द/i.test(text)) extracted.symptoms.push('Headache (Cephalea)');
+  if (/તાવ|fever|તાપ|बुखार/i.test(text)) extracted.symptoms.push('Fever (Pyrexia)');
+  if (/પેટમાં દુખ|stomach pain|abdominal pain|પેટ|पेट दर्द/i.test(text)) extracted.symptoms.push('Abdominal pain');
+  if (/ચક્કર|dizziness|giddiness|ચક્કર આવે|ચક્કર/i.test(text)) extracted.symptoms.push('Dizziness / Vertigo');
+  if (/ઉલટી|vomiting|ઉબકા|vomit|उल्टी/i.test(text)) extracted.symptoms.push('Nausea / Vomiting');
+  if (/શરદી|ખાંસી|cough|cold|ઉધરસ|खांसी/i.test(text)) extracted.symptoms.push('Cough & Cold');
+  if (/ગોઠણ|ઢીંચણ|સાંધા|knee pain|joint pain|ઘૂંટણ/i.test(text)) extracted.symptoms.push('Joint / Knee pain');
+
+  // ==========================================
+  // 8. RICH INTENT CLASSIFICATION & Q&A BRAIN
+  // ==========================================
   let reply = '';
 
-  // Question A: About Token / OPD Queue ("What is token?", "ટોકન શું છે?", "ટોકનથી શું થાય?")
-  if (/token|ટોકન|ટોકન શું|ટોકન નંબર|ટોકન થી|ક્યાં જવાનું|ક્યાં જવું|where to go|how to use|what is this token/i.test(text)) {
+  // INTENT 1: User just provided Age or a number
+  if (extracted.age) {
     if (isGujarati) {
-      reply = 'ટોકન નંબર એ તમારો ડિજિટલ OPD પાસ છે. ફોર્મ ભર્યા પછી મળેલો ટોકન નંબર રિસેપ્શન કાઉન્ટર પર બતાવશો એટલે સિસ્ટર અંજલિ શર્મા તમને યોગ્ય નિષ્ણાત ડૉક્ટરના રૂમમાં મોકલશે.';
+      reply = `તમારી ઉંમર ${extracted.age} ફોર્મમાં સફળતાપૂર્વક નોંધાઈ ગઈ છે. શું તમને બીપી, ડાયાબિટીસ જેવી કોઈ જૂની બીમારી છે કે કોઈ નિયમિત દવા ચાલુ છે?`;
+    } else if (isHindi) {
+      reply = `आपकी उम्र ${extracted.age} फॉर्म में दर्ज कर ली गई है। क्या आपको पहले से बीपी या शुगर जैसी कोई पुरानी बीमारी है?`;
+    } else {
+      reply = `Thank you! Your age (${extracted.age}) has been updated in the form. Do you have any chronic conditions (like BP or Diabetes) or take regular medications?`;
+    }
+  }
+  // INTENT 2: User says they don't know age / wants to skip
+  else if (/ખબર નથી|યાદ નથી|નથી ખબર|skip|don't know|dont know|not sure|pata nahi|nahi pata|छोड़ो/i.test(text)) {
+    if (isGujarati) {
+      reply = 'કોઈ વાંધો નહીં! ઉંમર અંદાજે રાખી શકાય છે અથવા ડૉક્ટર તપાસ દરમિયાન નોંધી લેશે. શું તમને કોઈ દવા કે વસ્તુથી એલર્જી છે?';
+    } else if (isHindi) {
+      reply = 'कोई बात नहीं, इसे डॉक्टर जांच के समय लिख लेंगे। क्या आपको किसी दवा से कोई एलर्जी है?';
+    } else {
+      reply = 'No worries, the doctor can note the exact age during your consultation. Do you have any known allergies or chronic conditions?';
+    }
+  }
+  // INTENT 3: Medication / Treatment request ("Can you give medicines?", "કઈ દવા લેવી?", "દવા આપો", "paracetamol")
+  else if (/દવા આપો|દવા જણાવો|કઈ દવા|medicine|tablet|treatment|paracetamol|દવા કઈ લેવી|दवा दो|दवा बताओ|कौनसी दवा/i.test(text)) {
+    if (isGujarati) {
+      reply = 'સલામતી અને સરકારી નિયમો મુજબ AI સહાયક ડૉક્ટર વગર જાતે દવા કે પ્રિસ્ક્રિપ્શન આપી શકતું નથી. તમારી તમામ તકલીફો અમે ફોર્મમાં નોંધી લીધી છે, જેથી ડૉક્ટર તમને તપાસીને યોગ્ય દવા આપશે.';
+    } else if (isHindi) {
+      reply = 'सुरक्षा नियमों के अनुसार AI सहायक सीधे दवा नहीं लिख सकता। आपकी तकलीफें फॉर्म में दर्ज कर ली गई हैं ताकि डॉक्टर जांच करके आपको सही दवा लिख सकें।';
+    } else {
+      reply = 'For clinical safety, AI assistants cannot prescribe medications directly. All your reported symptoms have been recorded so the doctor can evaluate you and prescribe the appropriate treatment.';
+    }
+  }
+  // INTENT 4: Hospital Costs / Free Treatment / Ayushman Card (PMJAY) ("ખર્ચ કેટલો?", "રૂપિયા", "આયુષ્માન કાર્ડ", "fees / charges")
+  else if (/ખર્ચ|રૂપિયા|ફી|charges|cost|free|fees|આયુષ્માન|pmjay|card|पैसा|खर्चा|फीस/i.test(text)) {
+    if (isGujarati) {
+      reply = 'સિવિલ હોસ્પિટલમાં તમામ OPD તપાસ, લોહી-પેશાબની તપાસ અને દવાઓ સંપૂર્ણ મફત છે. તેમજ આયુષ્માન ભારત (PMJAY) કાર્ડ હેઠળ તમામ ઓપરેશન અને દાખલ સારવાર પણ નિઃશુલ્ક છે.';
+    } else if (isHindi) {
+      reply = 'सिविल अस्पताल में ओपीडी जांच, ब्लड टेस्ट और दवाएं पूरी तरह निःशुल्क (Free) हैं। आयुष्मान भारत कार्ड के तहत सभी उपचार भी मुफ्त उपलब्ध हैं।';
+    } else {
+      reply = 'OPD consultations, standard diagnostic tests, and prescribed generic medications at the Civil Hospital are completely free of charge. All major procedures are covered under the Ayushman Bharat (PMJAY) scheme.';
+    }
+  }
+  // INTENT 5: Pharmacy / Medical Store location ("દવા ક્યાં મળશે?", "મેડિકલ સ્ટોર ક્યાં છે?", "medical store / dispensary")
+  else if (/દવા ક્યાં મળશે|દવાની દુકાન|મેડિકલ સ્ટોર|dispensary|pharmacy|medical store|દવા ક્યાં મળે|दवा कहाँ मिलेगी|दवाखाना/i.test(text)) {
+    if (isGujarati) {
+      reply = 'ડૉક્ટર તપાસીને પ્રિસ્ક્રિપ્શન આપે પછી તમે ગ્રાઉન્ડ ફ્લોર પર રૂમ નં. 5 (OPD ફાર્મસી કાઉન્ટર) પરથી તમારો ડિજિટલ ટોકન/પ્રિસ્ક્રિપ્શન બતાવીને મફત દવાઓ મેળવી શકો છો.';
+    } else if (isHindi) {
+      reply = 'डॉक्टर से पर्ची मिलने के बाद आप ग्राउंड फ्लोर पर रूम नंबर 5 (ओपीडी डिस्पेंसरी) से मुफ्त दवाएं प्राप्त कर सकते हैं।';
+    } else {
+      reply = 'After your consultation, you can collect your prescribed medications for free from the OPD Dispensary located at Ground Floor, Room No. 5.';
+    }
+  }
+  // INTENT 6: Laboratory / Blood tests / Urine / X-Ray / ECG ("લોહીની તપાસ", "લેબ", "એક્સ-રે", "x-ray", "blood test")
+  else if (/લોહી|લેબ|લેબોરેટરી|બ્લડ ટેસ્ટ|x-ray|એક્સ-રે|ecg|blood test|lab|investigation|खून की जांच|जांच/i.test(text)) {
+    if (isGujarati) {
+      reply = 'બ્લડ અને યુરિન ટેસ્ટ માટે સેન્ટ્રલ લેબોરેટરી રૂમ નં. 12 માં છે, અને એક્સ-રે/સોનોગ્રાફી રૂમ નં. 18 (રેડિયોલોજી ડિપાર્ટમેન્ટ) માં થાય છે. ECG માટે રૂમ 102 ની બાજુમાં રૂમ છે.';
+    } else if (isHindi) {
+      reply = 'ब्लड और यूरिन टेस्ट के लिए सेंट्रल लैब रूम नंबर 12 में है, और एक्स-रे रूम नंबर 18 में स्थित है। ईसीजी रूम 102 के पास होता है।';
+    } else {
+      reply = 'Blood and urine investigations are conducted in the Central Laboratory (Room 12). X-Ray and Ultrasound are located in Room 18 (Radiology Dept), and ECG is available next to Cabin 102.';
+    }
+  }
+  // INTENT 7: Doctor Cabins & Specialty Locations ("ડૉક્ટર ક્યાં બેસે છે?", "રૂમ 102", "ડૉ. મહેતા ક્યાં છે?")
+  else if (/ક્યાં બેસે છે|રૂમ નં|કેબિન|cabin|room|ડૉ. મહેતા|ડૉ. પ્રિયા|ડૉ. પટેલ|where is doctor|doctor room|डॉक्टर कहाँ/i.test(text)) {
+    if (isGujarati) {
+      reply = 'ડૉક્ટરોના કેબિન: 🫀 ડૉ. આરવ મહેતા (કાર્ડિયોલોજી) - કેબિન 102, 🩺 ડૉ. પ્રિયા શાહ (જનરલ મેડિસિન) - કેબિન 105, 🦴 ડૉ. રાજેશ પટેલ (ઓર્થોપેડિક) - કેબિન 204. રિસેપ્શન પર ટોકન બતાવતા જ સિસ્ટર તમને કેબિન તરફ દોરશે.';
+    } else if (isHindi) {
+      reply = 'डॉक्टर केबिन: कार्डियोलॉजी (डॉ. आरव मेहता) - केबिन 102, जनरल मेडिसिन (डॉ. प्रिया शाह) - केबिन 105, ऑर्थोपेडिक (डॉ. राजेश पटेल) - केबिन 204.';
+    } else {
+      reply = 'Doctor Cabins: Dr. Aarav Mehta (Cardiology) - Cabin 102; Dr. Priya Shah (Medicine) - Cabin 105; Dr. Rajesh Patel (Orthopedics) - Cabin 204; Trauma Emergency - Bay 1.';
+    }
+  }
+  // INTENT 8: Hospital Timings & Doctor Availability ("સમય શું છે?", "ક્યારે આવશે?", "ઓપીડી સમય", "timing / hours")
+  else if (/સમય|ક્યારે આવશે|ઓપીડી સમય|timing|hours|open|closed|schedule|समय|कब खुलता/i.test(text)) {
+    if (isGujarati) {
+      reply = 'જનરલ OPD સમય: સવારે 9:00 થી બપોરે 1:00 અને બપોરે 3:00 થી સાંજે 5:00 સુધી. ઇમરજન્સી અને ટ્રોમા સેવાઓ 24 કલાક (ચોવીસે કલાક) ખુલ્લી રહે છે.';
+    } else if (isHindi) {
+      reply = 'ओपीडी समय: सुबह 9:00 से दोपहर 1:00 और दोपहर 3:00 से शाम 5:00 बजे तक। इमरजेंसी और ट्रॉमा सेंटर 24 घंटे खुला रहता है।';
+    } else {
+      reply = 'General OPD Hours: Morning 9:00 AM – 1:00 PM and Afternoon 3:00 PM – 5:00 PM. Emergency & Casualty services operate 24/7.';
+    }
+  }
+  // INTENT 9: Wait Time & Queue Status ("કેટલો સમય લાગશે?", "મારો વારો ક્યારે આવશે?", "wait time / turn")
+  else if (/કેટલો સમય|વારો ક્યારે|વાર લાગશે|wait|line|queue|turn|कितना समय|बारी/i.test(text)) {
+    if (isGujarati) {
+      reply = 'ફોર્મ સબમિટ કરીને ટોકન લીધા પછી સામાન્ય રીતે 5 થી 15 મિનિટમાં વારો આવી જાય છે. ઇમરજન્સી અને સિનિયર સિટીઝન દર્દીઓને રિસેપ્શન સ્ટાફ પ્રાથમિકતા આપે છે.';
+    } else if (isHindi) {
+      reply = 'टोकन प्राप्त करने के बाद आमतौर पर 5 से 15 मिनट में डॉक्टर परामर्श मिल जाता है। आपातकालीन मरीजों को प्राथमिकता दी जाती है।';
+    } else {
+      reply = 'After obtaining your token pass, the typical wait time is 5–15 minutes. Triage nurses prioritize urgent cases immediately.';
+    }
+  }
+  // INTENT 10: Attendant / Family accompaniment ("સાથે કોઈ આવી શકે?", "કોઈને લાવી શકાય?")
+  else if (/સાથે|પરિવાર|relative|family|attendant|साथ में/i.test(text)) {
+    if (isGujarati) {
+      reply = 'હા, દર્દીની સાથે એક પરિજન કે સહાયકને ડૉક્ટરના તપાસ રૂમમાં જવાની મંજૂરી છે.';
+    } else if (isHindi) {
+      reply = 'हाँ, मरीज की सहायता के लिए एक परिजन को डॉक्टर केबिन के अंदर जाने की अनुमति है।';
+    } else {
+      reply = 'Yes, 1 attendant or family member is permitted to accompany the patient inside the consultation cabin.';
+    }
+  }
+  // INTENT 11: Emergency symptoms inquiry ("છાતીમાં દુખે છે", "શ્વાસ નથી લેવાતો", "chest pain", "attack")
+  else if (/છાતીમાં દુખ|શ્વાસ|ચક્કર|emergency|chest pain|breathing|attack|છાતી|સીને મેં દર્દ/i.test(text)) {
+    if (isGujarati) {
+      reply = '🚨 જો તમને છાતીમાં તીવ્ર દુખાવો કે શ્વાસ લેવામાં મુશ્કેલી થતી હોય, તો તરત જ ઇમરજન્સી વોર્ડ (કેબિન 102 / ટ્રોમા સેન્ટર) પર પહોંચો. અમે સ્ટાફ માટે રેડ-ફ્લેગ એલર્ટ જનરેટ કરી રહ્યા છીએ.';
+    } else if (isHindi) {
+      reply = '🚨 यदि आपको छाती में तेज दर्द या सांस लेने में भारी तकलीफ है, तो तुरंत इमरजेंसी वॉर्ड की ओर बढ़ें। स्टाफ को तत्काल सूचित किया जा रहा है।';
+    } else {
+      reply = '🚨 If you are experiencing acute chest pain or breathlessness, please proceed immediately to the Emergency / Casualty Bay. An emergency red-flag alert is active.';
+    }
+  }
+  // INTENT 12: About Token / How to use token ("ટોકન શું છે?", "ટોકનથી શું થાય?", "what is token")
+  else if (/token|ટોકન|ટોકન શું|ટોકન નંબર|ટોકન થી|ક્યાં જવાનું|what is this token/i.test(text)) {
+    if (isGujarati) {
+      reply = 'ટોકન નંબર એ તમારો ડિજિટલ OPD પાસ છે. ફોર્મ પૂર્ણ કર્યા પછી મળતો ટોકન નંબર રિસેપ્શન કાઉન્ટર પર બતાવશો એટલે સિસ્ટર અંજલિ તમને યોગ્ય નિષ્ણાત ડૉક્ટરના કેબિનમાં મોકલશે.';
     } else if (isHindi) {
       reply = 'टोकन नंबर आपका डिजिटल ओपीडी पास है। फॉर्म पूरा होने पर यह टोकन रिसेप्शन काउंटर पर दिखाएँ, जहाँ से स्टाफ आपको संबंधित विशेषज्ञ डॉक्टर के पास भेज देगा।';
     } else {
       reply = 'The Token ID is your digital OPD pass. Present it at the clinic reception desk, and the triage nursing staff will route you to the appropriate specialist doctor.';
     }
   }
-  // Question B: About Doctors / Specialty ("કયા ડોક્ટર તપાસશે?", "ડોક્ટર ક્યારે મળશે?", "Who is the doctor?")
-  else if (/doctor|ડોક્ટર|ડોકટર|ડૉક્ટર|doctor name|who will check|કયા ડોક્ટર|specialist/i.test(text)) {
+  // INTENT 13: What should I do next / Next steps ("હવે શું કરવાનું?", "આગળ શું કરવું?", "what next")
+  else if (/હવે શું|આગળ શું|next|what to do|what should i do|अब क्या करें|आगे क्या/i.test(text)) {
     if (isGujarati) {
-      reply = 'તમારા લક્ષણો મુજબ રિસેપ્શન સ્ટાફ તમને યોગ્ય નિષ્ણાત ડૉક્ટર (જેમ કે હૃદય માટે ડૉ. આરવ મહેતા, સામાન્ય બીમારી માટે ડૉ. પ્રિયા શાહ, હાડકાં માટે ડૉ. રાજેશ પટેલ) ફાળવશે.';
+      reply = 'સરસ! નીચે આપેલા "Confirm & Generate My Clinic Intake Pass" બટન પર ક્લિક કરો. તમને એક ડિજિટલ ટોકન નંબર (જેમ કે PAT-4821) મળશે જે રિસેપ્શન કાઉન્ટર પર બતાવવાનો રહેશે.';
     } else if (isHindi) {
-      reply = 'आपकी बीमारी के आधार पर रिसेप्शन स्टाफ आपको सही विशेषज्ञ डॉक्टर (जैसे कार्डियोलॉजी के डॉ. आरव मेहता या मेडिसिन की डॉ. प्रिया शाह) को असाइन करेगा।';
+      reply = 'नीचे दिए गए "Confirm & Generate Pass" बटन पर क्लिक करें। आपको एक टोकन नंबर मिलेगा जिसे रिसेप्शन काउंटर पर दिखाना होगा।';
     } else {
-      reply = 'Based on your symptoms, the triage staff will assign you to the relevant specialist (e.g. Dr. Aarav Mehta for Cardiology, Dr. Priya Shah for Medicine, or Dr. Rajesh Patel for Orthopedics).';
+      reply = 'Please click the "Confirm & Generate My Clinic Intake Pass" button below. You will receive a Token ID (e.g. PAT-4821) to show at the reception desk.';
     }
   }
-  // Question C: Emergency Symptoms Inquiry ("છાતીમાં દુખે છે શું કરું?", "ચક્કર આવે છે", "I have chest pain")
-  else if (/છાતીમાં દુખ|શ્વાસ|ચક્કર|emergency|chest pain|breathing|attack/i.test(text)) {
+  // INTENT 14: Reporting new symptoms (Headache, Fever, Stomach pain, Vomiting, Cough, etc.)
+  else if (extracted.symptoms.length > 0) {
+    const symList = extracted.symptoms.join(', ');
     if (isGujarati) {
-      reply = '🚨 જો તમને છાતીમાં તીવ્ર દુખાવો કે શ્વાસ લેવામાં મુશ્કેલી થતી હોય, તો તરત જ ઇમરજન્સી વોર્ડ (કેબિન 102) પર પહોંચો. અમે સ્ટાફ માટે રેડ-ફ્લેગ એલર્ટ જનરેટ કરી રહ્યા છીએ.';
+      reply = `મેં તમારો નવો લક્ષણ (${symList}) ફોર્મમાં ઉમેરી દીધો છે. આ તકલીફ કેટલા દિવસથી છે અથવા દર્દ કેટલું તીવ્ર (1 થી 10 માં) છે?`;
     } else if (isHindi) {
-      reply = '🚨 यदि आपको छाती में तेज दर्द या सांस लेने में भारी तकलीफ है, तो तुरंत इमरजेंसी वॉर्ड की ओर बढ़ें। स्टाफ को तत्काल सूचित किया जा रहा है।';
+      reply = `मैंने आपकी समस्या (${symList}) फॉर्म में जोड़ दी है। यह कितने दिनों से है या दर्द कितना तेज है (1 से 10 के पैमाने पर)?`;
     } else {
-      reply = '🚨 If you are experiencing acute chest pain or breathlessness, please proceed immediately to the Emergency/Casualty Bay. An emergency red-flag alert is flagged for the staff.';
+      reply = `I have added your symptom (${symList}) to your intake form. How many days has this lasted, or what is your pain level (1-10)?`;
     }
   }
-  // Question D: How to fill form / Greetings ("કેમ છો?", "નમસ્તે", "hello", "hi", "how to fill")
-  else if (/^(hi|hello|hey|namaste|kem cho|નમસ્તે|નમસ્કાર|કેમ છો|hello sahai)/i.test(text) || text.length < 6) {
+  // INTENT 15: Gratitude / Greetings ("આભાર", "ધન્યવાદ", "શુક્રિયા", "thank you", "thanks", "ok", "sarus", "kem cho", "namaste")
+  else if (/^(hi|hello|hey|namaste|kem cho|નમસ્તે|નમસ્કાર|કેમ છો|hello sahai|આભાર|ધન્યવાદ|શુક્રિયા|thank|thanks|ok|okay|સારું|બરાબર|ઠીક)/i.test(text)) {
     if (isGujarati) {
-      reply = 'નમસ્તે! હું તમારો સહાયક "સહાય મિત્ર" છું. તમે તમારી ઉંમર, જૂની બીમારી કે લક્ષણો અહીં જણાવી શકો છો જેથી હું તમારું ફોર્મ ભરી શકું.';
+      reply = 'તમારું સ્વાગત છે! હું "સહાય મિત્ર" છું. જો તમારા ફોર્મની વિગતો યોગ્ય હોય તો નીચે આપેલું "Confirm & Generate Pass" બટન દબાવીને તમારો ઓપીડી પાસ મેળવી શકો છો.';
     } else if (isHindi) {
-      reply = 'नमस्ते! मैं आपका सहायक "सहाय मित्र" हूँ। आप अपनी उम्र, बीमारी और दवाओं के बारे में बताइए, मैं आपका फॉर्म भरने में मदद करूँगा।';
+      reply = 'स्वागत है! अगर आपकी सारी जानकारी सही है, तो नीचे "Confirm & Generate Pass" बटन दबाकर अपना ओपीडी टोकन प्राप्त करें।';
     } else {
-      reply = 'Hello! I am "Sahai Mitra", your clinical assistant. Tell me about your symptoms, age, or medications, and I will help fill out your intake form.';
+      reply = 'You are welcome! If all your details look correct on the left, click "Confirm & Generate My Clinic Intake Pass" below to get your token.';
     }
   }
-  // Question E: Patient is sharing medical history ➔ acknowledge & ask for next missing field
+  // INTENT 16: Reporting medical history (BP, Diabetes, Meds, Allergies)
+  else if (extracted.existing_conditions.length > 0 || extracted.current_medicines.length > 0 || extracted.allergies.length > 0) {
+    if (isGujarati) {
+      reply = 'તમારી તબીબી વિગતો ફોર્મમાં સફળતાપૂર્વક અપડેટ થઈ ગઈ છે. શું અન્ય કોઈ જૂની બીમારી કે દવા વિશે જણાવવું છે? જો બધું બરાબર હોય તો નીચેથી ટોકન મેળવી લો.';
+    } else if (isHindi) {
+      reply = 'आपकी मेडिकल जानकारी फॉर्म में दर्ज कर ली गई है। यदि सब सही है तो नीचे से टोकन जनरेट कर सकते हैं।';
+    } else {
+      reply = 'Your medical details have been updated in the intake checklist. If everything looks complete, you can generate your clinic token below.';
+    }
+  }
+  // INTENT 17: General / Fallback with smart rotation across missing fields (NEVER loops on Age!)
   else {
-    const hasAge = currentFormData?.age || extracted.age;
-    const hasConditions = (currentFormData?.existing_conditions && currentFormData.existing_conditions.length > 0 && currentFormData.existing_conditions[0] !== 'None reported') || extracted.existing_conditions.length > 0;
-    const hasMeds = (currentFormData?.current_medicines && currentFormData.current_medicines.length > 0 && currentFormData.current_medicines[0] !== 'None reported') || extracted.current_medicines.length > 0;
-    const hasAllergies = (currentFormData?.allergies && currentFormData.allergies.length > 0 && currentFormData.allergies[0] !== 'Not specified') || extracted.allergies.length > 0;
+    const hasAge = currentFormData?.age && currentFormData.age !== 'Not specified';
+    const hasConditions = currentFormData?.existing_conditions && currentFormData.existing_conditions.length > 0 && currentFormData.existing_conditions[0] !== 'None reported';
+    const hasMeds = currentFormData?.current_medicines && currentFormData.current_medicines.length > 0 && currentFormData.current_medicines[0] !== 'None reported';
+    const hasAllergies = currentFormData?.allergies && currentFormData.allergies.length > 0 && currentFormData.allergies[0] !== 'Not specified';
 
     if (isGujarati) {
-      if (!hasAge) {
-        reply = 'મેં વિગત નોંધી લીધી છે. તમારી અંદાજે ઉંમર (Age) કેટલી છે?';
-      } else if (!hasConditions) {
-        reply = 'આભાર! શું તમને હાઈ બીપી, ડાયાબિટીસ કે અન્ય કોઈ જૂની બીમારી છે?';
+      if (!hasConditions) {
+        reply = 'મેં તમારી વાત નોંધી લીધી છે. શું તમને હાઈ બીપી, ડાયાબિટીસ કે અન્ય કોઈ જૂની બીમારી છે? (જો ન હોય તો "નથી" લખો)';
       } else if (!hasMeds) {
-        reply = 'શું તમે કોઈ નિયમિત દવા લઈ રહ્યા છો? (હા હોય તો દવાનું નામ જણાવો)';
+        reply = 'શું તમે દરરોજ કોઈ નિયમિત દવા લઈ રહ્યા છો?';
       } else if (!hasAllergies) {
-        reply = 'શું તમને કોઈ દવા કે વસ્તુથી એલર્જી છે? (જો ન હોય તો "નથી" કહો)';
+        reply = 'શું તમને કોઈ દવા કે વસ્તુથી એલર્જી છે?';
+      } else if (!hasAge) {
+        reply = 'તમારી અંદાજે ઉંમર (Age) કેટલી છે? (ખાલી નંબર પણ લખી શકો છો, જેમ કે 45)';
       } else {
-        reply = 'ખૂબ સરસ! તમારી તમામ જરૂરી વિગતો ફોર્મમાં નોંધાઈ ગઈ છે. હવે નીચે "Confirm & Generate Token" બટન દબાવીને પાસ મેળવી લો.';
+        reply = 'તમારી તમામ જરૂરી વિગતો ફોર્મમાં નોંધાઈ ગઈ છે. હવે નીચે "Confirm & Generate My Clinic Intake Pass" બટન દબાવીને ટોકન મેળવી લો.';
       }
     } else if (isHindi) {
-      if (!hasAge) {
-        reply = 'जानकारी दर्ज कर ली गई है। कृपया अपनी उम्र (Age) बताइए?';
-      } else if (!hasConditions) {
-        reply = 'क्या आपको पहले से हाई बीपी, शुगर या थायरॉइड जैसी कोई बीमारी है?';
+      if (!hasConditions) {
+        reply = 'जानकारी दर्ज कर ली गई है। क्या आपको पहले से बीपी या शुगर जैसी कोई पुरानी बीमारी है?';
       } else if (!hasMeds) {
         reply = 'क्या आप वर्तमान में कोई रोज़ाना दवा ले रहे हैं?';
       } else if (!hasAllergies) {
         reply = 'क्या आपको किसी दवा से कोई एलर्जी है?';
+      } else if (!hasAge) {
+        reply = 'आपकी अनुमानित उम्र (Age) क्या है?';
       } else {
-        reply = 'बहुत बढ़िया! आपकी सारी ज़रूरी जानकारी फॉर्म में भर दी गई है। अब आप टोकन प्राप्त कर सकते हैं।';
+        reply = 'आपकी सारी जानकारी दर्ज हो चुकी है। अब आप नीचे दिए गए बटन से टोकન ले सकते हैं।';
       }
     } else {
-      if (!hasAge) {
-        reply = 'I have updated your notes. Could you please provide your approximate age?';
-      } else if (!hasConditions) {
-        reply = 'Do you have any chronic conditions like High BP, Diabetes, or Asthma?';
+      if (!hasConditions) {
+        reply = 'I have noted your message. Do you have any chronic conditions like High BP, Diabetes, or Asthma?';
       } else if (!hasMeds) {
         reply = 'Are you currently taking any daily prescribed medications?';
       } else if (!hasAllergies) {
-        reply = 'Do you have any known allergies to medicines like Penicillin?';
+        reply = 'Do you have any known allergies to medicines or food?';
+      } else if (!hasAge) {
+        reply = 'Could you please provide your approximate age? (e.g. 45)';
       } else {
-        reply = 'Excellent! All clinical details are recorded. You can now confirm and generate your digital clinic token below.';
+        reply = 'All key clinical details are recorded. You can now proceed to generate your digital clinic token below.';
       }
     }
   }

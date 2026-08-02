@@ -19,6 +19,15 @@ const PATIENT_SAMPLES = [
   }
 ];
 
+const QUICK_CHAT_QUESTIONS = [
+  { label: '💊 દવા કઈ લેવી? (Medicines)', query: 'દવા કઈ લેવી?' },
+  { label: '🏥 ઓપીડી સમય શું છે? (Timings)', query: 'ઓપીડી સમય શું છે?' },
+  { label: '📍 ડૉક્ટર ક્યાં બેસે છે? (Doctor Cabins)', query: 'ડૉક્ટર ક્યાં બેસે છે?' },
+  { label: '💳 ખર્ચ / આયુષ્માન કાર્ડ (Free / PMJAY)', query: 'સારવાર મફત છે? આયુષ્માન કાર્ડ ચાલશે?' },
+  { label: '🧪 લેબ / એક્સ-રે ક્યાં છે? (Lab/X-Ray)', query: 'લેબોરેટરી અને એક્સ-રે ક્યાં છે?' },
+  { label: '🎟️ ટોકન શું છે? (Token Guide)', query: 'ટોકન શું છે અને આગળ શું કરવાનું?' }
+];
+
 export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes = [] }) {
   const [patientTab, setPatientTab] = useState('new_intake'); // 'new_intake' | 'view_prescription'
   const [step, setStep] = useState('initial'); // 'initial' | 'assisted_form' | 'token_view'
@@ -123,8 +132,9 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
 
     // Pre-populate initial extraction from text
     let age = '';
-    const ageMatch = initialText.match(/(\d+)\s*(?:years?|વર્ષ|साल|yr)/i);
-    if (ageMatch) age = `${ageMatch[1]} years`;
+    const ageMatch = initialText.match(/(\d+)\s*(?:years?|વર્ષ|साल|yr|yrs|વરસ)/i)
+      || initialText.match(/(?:age|ઉંમર|उम्र)\s*(?:is|che|hai|:)?\s*(\d+)/i);
+    if (ageMatch) age = `${ageMatch[1] || ageMatch[0]} years`;
 
     let dur = '';
     const durMatch = initialText.match(/(\d+)\s*(?:days?|દિ'|દિવસ|દિન|दिन|hours?|કલાક|घंटे|weeks?|અઠવાડિયા)/i);
@@ -141,10 +151,10 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
     const newForm = {
       name: patientName.trim() || 'Patient',
       phone: phone.trim() || '',
-      age: age,
+      age: age || '',
       gender: 'Not specified',
       chief_complaint: initialText.slice(0, 80),
-      duration: dur,
+      duration: dur || '',
       symptoms: initialText,
       severity: 5,
       existing_conditions: cond,
@@ -154,22 +164,44 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
 
     setFormData(newForm);
 
-    // Initial warm assistant greeting
-    const isGujarati = /[\u0A80-\u0AFF]/.test(initialText);
-    const isHindi = /[\u0900-\u097F]/.test(initialText);
+    // Initial warm assistant greeting tailored to missing fields
+    const isGujarati = /[\u0A80-\u0AFF]/.test(initialText) || /che|nathi|mane/i.test(initialText);
+    const isHindi = /[\u0900-\u097F]/.test(initialText) || /hai|nahi|mujhe/i.test(initialText);
 
     let initialGreeting = '';
     if (isGujarati) {
-      initialGreeting = `નમસ્તે ${patientName ? patientName : ''}! હું તમારો સહાયક "સહાય મિત્ર" છું. મેં તમારી તકલીફ નોંધી છે. આવો સાથે મળીને તમારું ફોર્મ પૂર્ણ કરીએ જેથી ડૉક્ટરને બધી વિગત મળી રહે.`;
+      initialGreeting = `નમસ્તે ${patientName ? patientName : ''}! હું તમારો સહાયક "સહાય મિત્ર" છું. મેં તમારી તકલીફ નોંધી લીધી છે.`;
       if (!age) {
-        initialGreeting += ' તમારી અંદાજે ઉંમર કેટલી છે?';
+        initialGreeting += ' તમારી અંદાજે ઉંમર (Age) કેટલી છે? (જેમ કે 45)';
       } else if (!cond) {
         initialGreeting += ' શું તમને કોઈ જૂની બીમારી (BP કે ડાયાબિટીસ) છે?';
+      } else if (!meds) {
+        initialGreeting += ' શું તમે દરરોજ કોઈ નિયમિત દવા લઈ રહ્યા છો?';
+      } else {
+        initialGreeting += ' તમારું ફોર્મ લગભગ તૈયાર છે. તમે કોઈ પ્રશ્ન પૂછી શકો છો અથવા નીચેથી ટોકન મેળવી શકો છો.';
       }
     } else if (isHindi) {
-      initialGreeting = `नमस्ते! मैं आपका सहायक "सहाय मित्र" हूँ। मैंने आपकी समस्या दर्ज कर ली है। कृपया कुछ और विवरण भरने में मेरी मदद करें। आपकी उम्र क्या है?`;
+      initialGreeting = `नमस्ते ${patientName ? patientName : ''}! मैं आपका सहायक "सहाय मित्र" हूँ। मैंने आपकी समस्या दर्ज कर ली है।`;
+      if (!age) {
+        initialGreeting += ' कृपया अपनी उम्र (Age) बताइए?';
+      } else if (!cond) {
+        initialGreeting += ' क्या आपको पहले से बीपी या शुगर जैसी कोई बीमारी है?';
+      } else if (!meds) {
+        initialGreeting += ' क्या आप कोई नियमित दवा ले रहे हैं?';
+      } else {
+        initialGreeting += ' आपका फॉर्म तैयार है। आप सवाल पूछ सकते हैं या नीचे से टोकन ले सकते हैं।';
+      }
     } else {
-      initialGreeting = `Hello! I am "Sahai Mitra", your clinical intake assistant. I have recorded your symptoms. Let me help you complete the remaining details for the doctor. What is your approximate age?`;
+      initialGreeting = `Hello ${patientName ? patientName : ''}! I am "Sahai Mitra", your clinical intake assistant. I have recorded your symptoms.`;
+      if (!age) {
+        initialGreeting += ' What is your approximate age? (e.g. 45)';
+      } else if (!cond) {
+        initialGreeting += ' Do you have any chronic conditions (like BP or Diabetes)?';
+      } else if (!meds) {
+        initialGreeting += ' Are you currently taking any regular medications?';
+      } else {
+        initialGreeting += ' You can ask any OPD question or proceed to generate your token below.';
+      }
     }
 
     setChatMessages([
@@ -184,11 +216,12 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
   };
 
   // Chat message submit handler
-  const handleSendChatMessage = async (e) => {
+  const handleSendChatMessage = async (e, directText = null) => {
     e?.preventDefault();
-    if (!chatInput.trim() || isChatLoading) return;
+    const rawMsg = directText !== null ? directText : chatInput;
+    if (!rawMsg || !rawMsg.trim() || isChatLoading) return;
 
-    const userMsg = chatInput.trim();
+    const userMsg = rawMsg.trim();
     setChatInput('');
 
     // Add user message to chat
@@ -207,11 +240,11 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
       if (response.updates) {
         setFormData((prev) => {
           const updated = { ...prev };
-          if (response.updates.age && !prev.age) {
+          if (response.updates.age) {
             updated.age = response.updates.age;
             setRecentlyUpdatedField('age');
           }
-          if (response.updates.duration && !prev.duration) {
+          if (response.updates.duration && (!prev.duration || prev.duration === 'Not specified')) {
             updated.duration = response.updates.duration;
             setRecentlyUpdatedField('duration');
           }
@@ -219,19 +252,30 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
             updated.severity = response.updates.severity;
             setRecentlyUpdatedField('severity');
           }
+          if (response.updates.symptoms && response.updates.symptoms.length > 0) {
+            const addedSym = response.updates.symptoms.join(', ');
+            updated.symptoms = prev.symptoms ? `${prev.symptoms}, ${addedSym}` : addedSym;
+            setRecentlyUpdatedField('symptoms');
+          }
           if (response.updates.existing_conditions && response.updates.existing_conditions.length > 0) {
             const added = response.updates.existing_conditions.join(', ');
-            updated.existing_conditions = prev.existing_conditions ? `${prev.existing_conditions}, ${added}` : added;
+            updated.existing_conditions = prev.existing_conditions && prev.existing_conditions !== 'None reported'
+              ? `${prev.existing_conditions}, ${added}` 
+              : added;
             setRecentlyUpdatedField('existing_conditions');
           }
           if (response.updates.current_medicines && response.updates.current_medicines.length > 0) {
             const added = response.updates.current_medicines.join(', ');
-            updated.current_medicines = prev.current_medicines ? `${prev.current_medicines}, ${added}` : added;
+            updated.current_medicines = prev.current_medicines && prev.current_medicines !== 'None reported'
+              ? `${prev.current_medicines}, ${added}` 
+              : added;
             setRecentlyUpdatedField('current_medicines');
           }
           if (response.updates.allergies && response.updates.allergies.length > 0) {
             const added = response.updates.allergies.join(', ');
-            updated.allergies = prev.allergies ? `${prev.allergies}, ${added}` : added;
+            updated.allergies = prev.allergies && prev.allergies !== 'Not specified'
+              ? `${prev.allergies}, ${added}` 
+              : added;
             setRecentlyUpdatedField('allergies');
           }
           return updated;
@@ -665,6 +709,21 @@ export default function PatientPortal({ onSaveIntake, isLoading, patientIntakes 
                     </div>
                   )}
                   <div ref={chatBottomRef} />
+                </div>
+
+                {/* Quick Interactive Inquiry Chips */}
+                <div className="chat-quick-suggestions">
+                  {QUICK_CHAT_QUESTIONS.map((chip, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className="chat-quick-chip"
+                      disabled={isChatLoading}
+                      onClick={() => handleSendChatMessage(null, chip.query)}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
                 </div>
 
                 <form onSubmit={handleSendChatMessage} className="chat-input-bar">
