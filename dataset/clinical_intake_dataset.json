@@ -1,0 +1,160 @@
+[
+  {
+    "instruction_type": "clinical_intake",
+    "language": "Gujarati",
+    "input": "મને બે દિવસથી છાતીમાં દુખે છે અને આજે સવારથી શ્વાસ લેવામાં તકલીફ થાય છે. બ્લડ પ્રેશરની દવા ચાલે છે પણ બે દિવસથી લીધી નથી. ઉંમર 54 વર્ષ છે.",
+    "output": {
+      "language_detected": "Gujarati",
+      "chief_complaint": "Acute chest pain and severe dyspnea for 2 days",
+      "symptoms": ["Chest pain", "Shortness of breath / Dyspnea"],
+      "duration": "2 days (exacerbated this morning)",
+      "age": "54 years",
+      "gender": "Not specified",
+      "existing_conditions": ["Hypertension (High BP)"],
+      "current_medicines": ["Antihypertensive medication (missed for past 2 days)"],
+      "allergies": "Not specified",
+      "missing_details": ["Current blood pressure reading", "Radiation of chest pain to left arm or jaw"],
+      "emergency_indicators": ["Potential Acute Coronary Syndrome (ACS)", "Acute Dyspnea"],
+      "doctor_summary": "54-year-old patient with known hypertension presenting with a 2-day history of chest pain and worsening dyspnea after missing BP medication. High suspicion of acute cardiovascular or respiratory compromise requiring urgent triage."
+    }
+  },
+  {
+    "instruction_type": "clinical_intake",
+    "language": "Gujarati",
+    "input": "ત્રણ દિવસથી ખૂબ તાવ આવે છે, માથું ફાટી જાય એવું દુખે છે અને ઊલટી જેવું લાગે છે. ડાયાબિટીસ છે અને મેટફોર્મિન લઉં છું. ઉંમર 46 છે.",
+    "output": {
+      "language_detected": "Gujarati",
+      "chief_complaint": "High fever with severe headache and nausea for 3 days",
+      "symptoms": ["High grade fever", "Severe cephalea (headache)", "Nausea"],
+      "duration": "3 days",
+      "age": "46 years",
+      "gender": "Not specified",
+      "existing_conditions": ["Diabetes Mellitus Type 2"],
+      "current_medicines": ["Metformin"],
+      "allergies": "Not specified",
+      "missing_details": ["Current blood glucose level", "Presence of chills or rash"],
+      "emergency_indicators": ["None detected"],
+      "doctor_summary": "46-year-old diabetic patient presenting with 3 days of high fever, severe headache, and nausea on Metformin. Requires evaluation for systemic acute febrile illness and blood sugar monitoring."
+    }
+  },
+  {
+    "instruction_type": "clinical_intake",
+    "language": "Hindi",
+    "input": "नमस्ते डॉक्टर साहब, मुझे 4 दिन से लगातार खांसी है और बलगम में थोड़ा खून आया है। शाम को पसीना आता है। उम्र 39 साल। कोई पुरानी बीमारी नहीं है।",
+    "output": {
+      "language_detected": "Hindi",
+      "chief_complaint": "Persistent cough with hemoptysis and night sweats for 4 days",
+      "symptoms": ["Persistent productive cough", "Hemoptysis (blood in sputum)", "Nocturnal diaphoresis (night sweats)"],
+      "duration": "4 days",
+      "age": "39 years",
+      "gender": "Not specified",
+      "existing_conditions": ["None reported"],
+      "current_medicines": ["None reported"],
+      "allergies": "Not specified",
+      "missing_details": ["Chest X-Ray history", "History of tuberculosis exposure"],
+      "emergency_indicators": ["Hemoptysis (Red Flag for Pulmonary pathology)"],
+      "doctor_summary": "39-year-old patient with no prior chronic illness presenting with a 4-day history of cough, blood-tinged sputum, and night sweats. Pulmonary evaluation and infectious workup indicated."
+    }
+  },
+  {
+    "instruction_type": "clinical_intake",
+    "language": "Hindi",
+    "input": "पेट के दाहिने निचले हिस्से में अचानक बहुत तेज दर्द शुरू हुआ है। 2 बार उल्टी हुई है। उम्र 22 साल, पुरुष। कोई दवा नहीं चल रही।",
+    "output": {
+      "language_detected": "Hindi",
+      "chief_complaint": "Acute severe right lower quadrant abdominal pain with vomiting",
+      "symptoms": ["Right lower quadrant abdominal pain", "Vomiting (2 episodes)"],
+      "duration": "Sudden onset (< 24 hours)",
+      "age": "22 years",
+      "gender": "Male",
+      "existing_conditions": ["None reported"],
+      "current_medicines": ["None reported"],
+      "allergies": "Not specified",
+      "missing_details": ["Rebound tenderness at McBurney's point", "Fever presence"],
+      "emergency_indicators": ["Acute abdomen (Suspected Appendicitis)"],
+      "doctor_summary": "22-year-old male presenting with acute severe right lower quadrant abdominal pain accompanied by 2 episodes of emesis. High suspicion for acute appendicitis requiring immediate surgical review."
+    }
+  },
+  {
+    "instruction_type": "clinical_intake",
+    "language": "English / Mixed",
+    "input": "Age 68 male. Severe bilateral knee joint pain and swelling for past 2 weeks, difficulty walking. Known case of Osteoarthritis and Asthma. Taking Inhaler and Paracetamol. Allergic to Sulfa drugs.",
+    "output": {
+      "language_detected": "English / Mixed",
+      "chief_complaint": "Bilateral knee joint pain and swelling with ambulatory difficulty for 2 weeks",
+      "symptoms": ["Bilateral knee arthralgia", "Joint swelling", "Impaired mobility"],
+      "duration": "2 weeks",
+      "age": "68 years",
+      "gender": "Male",
+      "existing_conditions": ["Osteoarthritis", "Bronchial Asthma"],
+      "current_medicines": ["Inhaled Bronchodilator / Corticosteroid", "Paracetamol"],
+      "allergies": ["Sulfa drugs (Sulfonamides)"],
+      "missing_details": ["Recent joint trauma or fever", "Weight-bearing status"],
+      "emergency_indicators": ["None detected"],
+      "doctor_summary": "68-year-old male with history of asthma and osteoarthritis presenting with a 2-week flare-up of bilateral knee pain, swelling, and reduced mobility. Note Sulfa allergy before initiating any anti-inflammatory regimen."
+    }
+  },
+  {
+    "instruction_type": "rural_transfer",
+    "language": "Gujarati / Mixed",
+    "input": "PHC Bavla Referral Chit: 42 F transferred to Civil Hospital Ahmedabad. Farm worker, Viper snake bite on right ankle at 8:30 AM. Local swelling ++, bleeding from bite puncture. 2 vials polyvalent ASV given IV with Normal Saline at 9:15 AM. Tetanus Toxoid 0.5ml given. In 108 ambulance, patient had 1 episode gum bleeding. BP 100/60, Pulse 108.",
+    "output": {
+      "language_detected": "Gujarati / Mixed",
+      "patient_name": "Unknown (Female, 42y)",
+      "age_gender": "42 Female",
+      "referring_facility": "PHC Bavla",
+      "receiving_facility": "Civil Hospital Emergency Trauma Center",
+      "transfer_reason": "Hemotoxic Viper snake envenomation with active coagulopathy",
+      "chief_condition_at_referral": "Snake bite on right ankle with systemic envenomation",
+      "symptoms": ["Local right ankle edema", "Puncture bleeding", "Systemic gum bleeding (gingival hemorrhage)", "Tachycardia (Pulse 108)"],
+      "pre_transfer_treatments": ["2 vials Polyvalent ASV IV (9:15 AM)", "IV Normal Saline", "Tetanus Toxoid 0.5ml IM"],
+      "transit_events": ["1 episode of spontaneous gum bleeding in 108 ambulance"],
+      "allergies": "Unverified",
+      "critical_handover_gaps": ["20-minute Whole Blood Clotting Test (20WBCT) result missing", "Urine output in transit not documented"],
+      "emergency_red_flags": ["Systemic hemotoxicity / DIC risk (Gum bleeding)", "Requirement for immediate additional ASV titration"],
+      "doctor_handover_summary": "42-year-old female transferred from PHC Bavla following a Viper bite with 2 vials of ASV pre-administered. Developed in-transit gum bleeding indicating evolving coagulopathy. Urgent repeat 20WBCT, coagulation profile, and escalated ASV protocol indicated immediately upon arrival."
+    }
+  },
+  {
+    "instruction_type": "rural_transfer",
+    "language": "Hindi / Mixed",
+    "input": "CHC Sanand Transfer Note: 28 yr female G2P1 at 39 weeks. Postpartum hemorrhage after normal vaginal delivery at 11:30 AM. Estimated blood loss 700ml. Uterus soft/boggy. Inj Oxytocin 20 units in RL infusion started at 11:45 AM. Inj Tranexamic Acid 1g IV given. Ambulance transit stable, BP 90/60 mmHg, Pulse 118 bpm. Transferred for emergency obstetric management and blood transfusion.",
+    "output": {
+      "language_detected": "Hindi / Mixed",
+      "patient_name": "Unknown (Female, 28y)",
+      "age_gender": "28 Female",
+      "referring_facility": "CHC Sanand",
+      "receiving_facility": "Civil Hospital Emergency Obstetric / Labour Room",
+      "transfer_reason": "Primary Postpartum Hemorrhage (PPH) secondary to uterine atony with class II hemorrhagic shock",
+      "chief_condition_at_referral": "Postpartum Hemorrhage (~700ml blood loss) following vaginal delivery",
+      "symptoms": ["Uterine atony (soft/boggy uterus)", "Hypotension (BP 90/60)", "Tachycardia (Pulse 118 bpm)"],
+      "pre_transfer_treatments": ["Inj Oxytocin 20 IU in Ringer Lactate (11:45 AM)", "Inj Tranexamic Acid 1g IV"],
+      "transit_events": ["Stable in transit with ongoing uterotonic infusion"],
+      "allergies": "Unverified",
+      "critical_handover_gaps": ["Pre-transfer Hemoglobin level missing", "Blood cross-match units sent status not specified"],
+      "emergency_red_flags": ["Postpartum Hemorrhage with hemodynamic instability (Hypotension + Tachycardia)", "Immediate blood transfusion and surgical uterotonic interventions required"],
+      "doctor_handover_summary": "28-year-old female transferred from CHC Sanand post-vaginal delivery with severe PPH (~700ml) and uterine atony. Received pre-transfer Oxytocin and Tranexamic Acid. Currently tachycardic (118 bpm) and hypotensive (90/60). Requires immediate obstetric surgical team standby and emergency blood typing/transfusion."
+    }
+  },
+  {
+    "instruction_type": "rural_transfer",
+    "language": "English / Mixed",
+    "input": "PHC Dholka Urgent Referral: 31 M involved in high-speed motorcycle vs tree road traffic accident at 1:15 PM. Sustained blunt head trauma and compound fracture left tibia-fibula. GCS 9/15 (E2V3M4), unequal pupils (R 4mm sluggish, L 3mm reactive). 100ml 20% Mannitol IV given at 1:45 PM. Cervical collar and leg splint applied. Airway maintained on O2 mask at 6L/min. Vitals: BP 155/95, HR 56 (Cushing response).",
+    "output": {
+      "language_detected": "English / Mixed",
+      "patient_name": "Unknown (Male, 31y)",
+      "age_gender": "31 Male",
+      "referring_facility": "PHC Dholka",
+      "receiving_facility": "Civil Hospital Trauma Center / Neurosurgery Bay 1",
+      "transfer_reason": "Severe Traumatic Brain Injury with raised ICP and compound fracture left leg",
+      "chief_condition_at_referral": "Polytrauma with Acute Head Injury (GCS 9) and Cushing's Triad",
+      "symptoms": ["Depressed consciousness (GCS 9/15)", "Anisocoria (Right pupil 4mm sluggish)", "Bradycardia with hypertension (Cushing's triad)", "Compound tibia-fibula fracture"],
+      "pre_transfer_treatments": ["IV Mannitol 20% 100ml (1:45 PM)", "Cervical collar application", "Left lower limb rigid splint", "High flow O2 via face mask"],
+      "transit_events": ["Maintained airway on oxygen mask"],
+      "allergies": "Unverified",
+      "critical_handover_gaps": ["Last pupillary check before arrival not documented", "Antibiotic / Tetanus for open fracture not recorded"],
+      "emergency_red_flags": ["Elevated Intracranial Pressure (ICP) with Cushing response", "Impending brain herniation / Airway compromise"],
+      "doctor_handover_summary": "31-year-old male polytrauma transfer from PHC Dholka with severe traumatic brain injury (GCS 9) showing signs of raised ICP (anisocoria, bradycardia, hypertension). Received pre-transfer Mannitol. Requires immediate trauma team standby, emergency neurosurgical evaluation, definitive airway management, and STAT NCCT Brain."
+    }
+  }
+]

@@ -98,15 +98,32 @@ Open your browser at `http://localhost:5173`.
 
 ---
 
+---
+
+## 🧠 LoRA / QLoRA Fine-Tuning Pipeline
+To further fine-tune Google Gemma 2 (2B-IT) on regional vernacular clinical notes:
+- **Jupyter Notebook:** [`fine_tune_gemma.ipynb`](./fine_tune_gemma.ipynb) *(1-click executable on Kaggle/Colab GPU)*
+- **CLI Training Script:** [`train_lora.py`](./train_lora.py)
+- **Clinical Dataset:** [`dataset/clinical_intake_dataset.json`](./dataset/clinical_intake_dataset.json)
+
+```bash
+# Run 4-bit QLoRA fine-tuning on Gemma 2B
+python train_lora.py --dataset_path dataset/clinical_intake_dataset.json --epochs 5 --batch_size 2
+```
+
+---
+
 ## 📊 Kaggle Benchmarking & Reproducibility
 The prompt engineering and JSON schema stability were benchmarked on **Kaggle GPU T4 / P100** environments:
-- **Notebook Code & Write-up:** See [`KAGGLE_SUBMISSION_PACK.md`](./KAGGLE_SUBMISSION_PACK.md)
+- **LoRA Fine-Tuning Notebook:** [`fine_tune_gemma.ipynb`](./fine_tune_gemma.ipynb)
+- **Kaggle Submission Guide & Write-up:** [`KAGGLE_SUBMISSION_PACK.md`](./KAGGLE_SUBMISSION_PACK.md)
 - **Interactive Presentation Deck:** Open [`presentation_preview.html`](./presentation_preview.html) in your browser.
 
 ---
 
 ## 🛠️ Technology Stack
-- **AI / LLM:** Google Gemma 2B via Ollama (`localhost:11434`)
+- **AI / LLM:** Google Gemma 2B (via Ollama `localhost:11434` or PyTorch / Hugging Face Transformers)
+- **Fine-Tuning:** Hugging Face PEFT (LoRA / QLoRA), TRL SFTTrainer, BitsAndBytes 4-bit NF4
 - **Frontend:** React 18, Vite
 - **Styling:** Custom Vanilla CSS Design System (Glassmorphic Dark Mode)
 - **Audio / Speech:** Multilingual Web Speech Recognition API
