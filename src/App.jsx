@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import RoleSelector from './components/RoleSelector';
 import PatientPortal from './components/PatientPortal';
@@ -12,9 +12,22 @@ import { checkEmergencies } from './utils/emergencyRules';
 import { INITIAL_INTAKES } from './services/clinicalData';
 
 export default function App() {
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('civil_sahai_theme') || 'dark';
+  });
+
   const [currentRole, setCurrentRole] = useState(null); // null = menu, 'patient' | 'reception' | 'doctor' | 'camp'
   const [activeStaff, setActiveStaff] = useState(null);
   const [activeDoctor, setActiveDoctor] = useState(null);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('civil_sahai_theme', theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const [isLoading, setIsLoading] = useState(false);
   const [parsedData, setParsedData] = useState(null);
@@ -120,7 +133,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-wrapper">
+    <div className="app-wrapper" data-theme={theme}>
       <div className="container">
         <Header
           currentRole={currentRole}
@@ -128,6 +141,8 @@ export default function App() {
           activeStaff={activeStaff}
           activeDoctor={activeDoctor}
           onLogoutUser={handleLogoutUser}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
         />
 
         <SafetyDisclaimer />

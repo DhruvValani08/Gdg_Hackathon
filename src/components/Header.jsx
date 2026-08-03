@@ -12,7 +12,9 @@ export default function Header({
   onSwitchRole,
   activeStaff,
   activeDoctor,
-  onLogoutUser
+  onLogoutUser,
+  theme = 'dark',
+  onToggleTheme
 }) {
   const activeRoleData = currentRole ? ROLE_INFO[currentRole] : null;
 
@@ -20,7 +22,7 @@ export default function Header({
     <header className="header">
       <div className="header-badge-row">
         <span className="pill-badge">🏥 Multilingual Clinical AI</span>
-        <span className="pill-badge pill-gradient">Gemma 4 Powered</span>
+        <span className="pill-badge pill-gradient">Gemma Powered</span>
         
         {activeRoleData && (
           <span
@@ -42,6 +44,16 @@ export default function Header({
             {activeDoctor.avatar} Logged in: {activeDoctor.name} — {activeDoctor.specialty}
           </span>
         )}
+
+        <button
+          type="button"
+          className="theme-toggle-btn"
+          onClick={onToggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+        >
+          <span className="theme-toggle-icon">{theme === 'dark' ? '☀️' : '🌙'}</span>
+          <span className="theme-toggle-text">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+        </button>
       </div>
 
       <h1>Civil Sahai</h1>
